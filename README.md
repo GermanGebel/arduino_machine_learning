@@ -1,2 +1,3 @@
 # arduino_machine_learning
-Naive Bayes is a method of machine learning. MultinomialNB shows that this method is the best in computer vision for ARDUINO DUE. 
+1. В папке *learning* содержится код на python для обучения (дообучения), сохранения и экспорта в С++ модели 
+2. В папке *prediction* содержится библиотека из prediction.h и prediction.cpp для Arduino DUE для предсказания результата и доп. программы для примера
