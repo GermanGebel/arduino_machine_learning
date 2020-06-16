@@ -1,11 +1,14 @@
 def c_array(data) -> str:
     """
     Возвращает тело N-мерного массива как в языке С++
-    :param data: str, int, float - массив с переменными
+    :param data: str, int, float - массив с переменными одного типа
     :return: {1, 2} or {"1", "2"}
     """
     s = '{'
     for i in range(len(data)):
+        if type(data[i]) != type(data[0]):
+            if not (type(data[i]) == float or type(data[i]) == int and type(data[0]) == float or type(data[0]) == int): 
+                return None
         if type(data[i]) == str:
             s += '"{}"'.format(data[i])
         else:
@@ -40,8 +43,7 @@ def c_code_line_declaration(data, name):
     elif type(data[0]) == float:
         type_ = 'float'
     elif type(data[0]) == list:
-        type_ = 'float'
-        return 'extern %s %s[%d][%d];' % (type_, name, len(data), len(data[0]))
+        return 'extern float %s[%d][%d];' % (name, len(data), len(data[0]))
     return 'extern %s %s[%d];' % (type_, name, len(data))
 
 
@@ -66,13 +68,12 @@ def c_code_line_init(data, name):
     elif type(data[0]) == float:
         type_ = 'float'
     elif type(data[0]) == list:
-        type_ = 'float'
-        return '%s %s[%d][%d] = %s;' % (type_, name, len(data), len(data[0]), c_array(data))
+        return 'float %s[%d][%d] = %s;' % (name, len(data), len(data[0]), c_array(data))
     return '%s %s[%d] = %s;' % (type_, name, len(data), c_array(data))
 
 
 def export_model_to_cpp(sklearn_model, h_filename='c++/modelMultinominalNB.h', cpp_filename='c++/modelMultinominalNB.cpp'):
-    new_data = {
+    data = {
         'size_classes_': len(sklearn_model.classes_),
         'classes_': sklearn_model.classes_.tolist(),
         'size_class_log_prior_': len(sklearn_model.class_log_prior_),
@@ -82,22 +83,24 @@ def export_model_to_cpp(sklearn_model, h_filename='c++/modelMultinominalNB.h', c
         'feature_log_prob_': sklearn_model.feature_log_prob_.T.tolist()
     }
 
-    with open(h_filename, 'w') as h_file:
-        h_file.write('#include <string>\nusing std::string;\n')
-        for key in new_data.keys():
-            h_file.write(c_code_line_declaration(new_data[key], key))
-            h_file.write('\n')
-        h_file.close()
+    h_file = open(h_filename, 'w')
+    cpp_file = open(cpp_filename, 'w')
+    h_file.write('#include <string>\nusing std::string;\n')
 
-    with open(cpp_filename, 'w') as cpp_file:
-        h = h_filename
-        if '/' in h:
-            h = h.split('/')
-            h = h[len(h)-1]
+    h = h_filename
+    if '/' in h:
+        h = h.split('/')
+        h = h[len(h)-1]
 
-        cpp_file.write('#include "{}"\n#include <string>\nusing std::string;\n'.format(h))
-        for key in new_data.keys():
-            cpp_file.write(c_code_line_init(new_data[key], key))
-            cpp_file.write('\n')
-        cpp_file.close()
+    cpp_file.write('#include "{}"\n#include <string>\nusing std::string;\n'.format(h))
+
+    for key in data.keys():
+        h_file.write(c_code_line_declaration(data[key], key))
+        h_file.write('\n')
+        cpp_file.write(c_code_line_init(data[key], key))
+        cpp_file.write('\n')
+
+    h_file.close()
+    cpp_file.close()
+
 
