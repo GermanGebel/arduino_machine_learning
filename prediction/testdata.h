@@ -1,0 +1,1 @@
+extern int x_test[37][3072];
