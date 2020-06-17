@@ -22,7 +22,7 @@ def c_array(data) -> str:
     return s
 
 
-def c_code_line_declaration(data, name):
+def c_code_line_declaration(data, name) -> str:
     """
     Возвращает строку объявления переменной как в С++ для файла .h
     :param data: str, int, float - массив с переменными
